@@ -17,7 +17,6 @@ android {
         targetSdk = 32
         versionCode = 1
         versionName = "1.0"
-
     }
 
     val androidStoreFile: String? by rootProject
