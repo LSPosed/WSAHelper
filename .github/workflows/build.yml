@@ -57,7 +57,7 @@ jobs:
         echo 'org.gradle.parallel=true' >> gradle.properties
         echo 'org.gradle.vfs.watch=true' >> gradle.properties
         echo 'org.gradle.jvmargs=-Xmx2048m' >> gradle.properties
-        bash ./gradlew :app:aD :app:aR :stub:aR
+        bash ./gradlew :app:aR :stub:aR
     - name: Upload apks
       uses: actions/upload-artifact@v2
       with:
