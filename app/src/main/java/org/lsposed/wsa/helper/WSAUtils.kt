@@ -15,32 +15,40 @@ fun getWSAInstallReceiver(context: Context) = runCatching {
         cl.loadClass("com.microsoft.windows.redirection.AppsRedirectionHandler")
     val ctor = handlerClass.getConstructor(Context::class.java)
     ctor.newInstance(object : ContextWrapper(context) {
-        fun onRegister(receiver: BroadcastReceiver?, filter: IntentFilter): Intent? {
+        fun onRegister(receiver: BroadcastReceiver?, filter: IntentFilter) {
             Log.d("LSPosed", "skip receiver")
             if (filter.hasAction(Intent.ACTION_PACKAGE_ADDED) && receiver != null) {
                 installReceiver = receiver
                 Log.i("LSPosed", "got install receiver")
             }
-            return null
         }
 
         override fun registerReceiver(
             receiver: BroadcastReceiver?,
             filter: IntentFilter
-        ) = onRegister(receiver, filter)
+        ) = run {
+            onRegister(receiver, filter)
+            super.registerReceiver(receiver, filter)
+        }
 
         override fun registerReceiver(
             receiver: BroadcastReceiver?,
             filter: IntentFilter,
             flags: Int
-        ) = onRegister(receiver, filter)
+        ) = run {
+            onRegister(receiver, filter)
+            super.registerReceiver(receiver, filter, flags)
+        }
 
         override fun registerReceiver(
             receiver: BroadcastReceiver?,
             filter: IntentFilter,
             broadcastPermission: String?,
             scheduler: Handler?
-        ) = onRegister(receiver, filter)
+        ) = run {
+            onRegister(receiver, filter)
+            super.registerReceiver(receiver, filter, broadcastPermission, scheduler)
+        }
 
         override fun registerReceiver(
             receiver: BroadcastReceiver?,
@@ -48,7 +56,10 @@ fun getWSAInstallReceiver(context: Context) = runCatching {
             broadcastPermission: String?,
             scheduler: Handler?,
             flags: Int
-        ) = onRegister(receiver, filter)
+        ) = run {
+            onRegister(receiver, filter)
+            super.registerReceiver(receiver, filter, broadcastPermission, scheduler, flags)
+        }
     })
     installReceiver
 }.getOrNull()
