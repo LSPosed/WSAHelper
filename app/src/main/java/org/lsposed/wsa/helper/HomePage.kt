@@ -75,22 +75,21 @@ fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
                 }
             }
         },
-        content = { innerPadding ->
-            LazyColumn(
-                contentPadding = innerPadding
-            ) {
-                items(items = apps) {
-                    AppListItem(app = it) {
-                        apps = apps.map { that ->
-                            if (it.packageName == that.packageName) {
-                                that.copy(selected = !that.selected)
-                            } else that
-                        }
-                        showBottomBar = apps.countSelected() > 0
+    ) { innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding
+        ) {
+            items(items = apps) {
+                AppListItem(app = it) {
+                    apps = apps.map { that ->
+                        if (it.packageName == that.packageName) {
+                            that.copy(selected = !that.selected)
+                        } else that
                     }
+                    showBottomBar = apps.countSelected() > 0
                 }
-
             }
+
         }
-    )
+    }
 }
