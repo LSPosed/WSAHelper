@@ -1,5 +1,6 @@
 package org.lsposed.wsa.helper
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
@@ -8,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,9 +22,13 @@ import org.lsposed.wsa.helper.ui.MarqueeText
 
 @Composable
 fun AppListItem(app: App, onClick: () -> Unit) {
+    val elevation by animateDpAsState(
+        if (app.selected) 8.dp else 0.dp
+    )
     Surface(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp).fillMaxWidth(),
-        shadowElevation = if (app.selected) 20.dp else 2.dp,
+        shadowElevation = elevation,
+        tonalElevation = elevation,
         shape = RoundedCornerShape(corner = CornerSize(16.dp))
     ) {
         Row(
@@ -31,7 +37,7 @@ fun AppListItem(app: App, onClick: () -> Unit) {
             AppIcon(app)
             Column(
                 modifier = Modifier
-                    .padding(start=16.dp, end=16.dp)
+                    .padding(start = 16.dp, end = 16.dp)
                     .fillMaxWidth()
                     .align(Alignment.CenterVertically)
             ) {
