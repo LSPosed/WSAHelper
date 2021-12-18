@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ fun List<App>.selectedPackages() = filter { it.selected }.map { it.packageName }
 @Composable
 fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
     val context = LocalContext.current
-    var apps by remember { mutableStateOf(DataProvider.getApplicationList(context.packageManager)) }
+    var apps by rememberSaveable { mutableStateOf(DataProvider.getApplicationList(context.packageManager)) }
 
     fun broadcast(action: String) {
         CoroutineScope(Dispatchers.Main).launch {
