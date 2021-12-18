@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme.typography
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,27 +20,28 @@ import org.lsposed.wsa.helper.ui.MarqueeText
 
 @Composable
 fun AppListItem(app: App, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp).fillMaxWidth()
-            .selectable(false, onClick = onClick),
-        elevation = if (app.selected) 20.dp else 2.dp,
+    Surface(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp).fillMaxWidth(),
+        shadowElevation = if (app.selected) 20.dp else 2.dp,
         shape = RoundedCornerShape(corner = CornerSize(16.dp))
     ) {
-        Row {
+        Row(
+            modifier = Modifier.selectable(false, onClick = onClick),
+        ) {
             AppIcon(app)
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(start=16.dp, end=16.dp)
                     .fillMaxWidth()
                     .align(Alignment.CenterVertically)
             ) {
-                MarqueeText(app.label.toString(), style = typography.h5)
+                MarqueeText(app.label.toString(), style = typography.titleLarge)
                 MarqueeText(
                     "${app.versionName} (${app.versionCode})",
-                    style = typography.subtitle1,
+                    style = typography.titleMedium,
                     overflow = TextOverflow.Ellipsis
                 )
-                MarqueeText(app.packageName, style = typography.subtitle2)
+                MarqueeText(app.packageName, style = typography.bodyLarge)
             }
         }
     }

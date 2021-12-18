@@ -5,23 +5,16 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,31 +24,14 @@ import org.lsposed.wsa.helper.data.model.App
 fun List<App>.countSelected() = count { it.selected }
 fun List<App>.selectedPackages() = filter { it.selected }.map { it.packageName }
 
+@ExperimentalMaterial3Api
 @Suppress("FunctionName")
 @ExperimentalAnimationApi
-@ExperimentalMaterialApi
 @Composable
 fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
     val context = LocalContext.current
     var apps by remember { mutableStateOf(DataProvider.getApplicationList(context.packageManager)) }
-    val scaffoldState = rememberBottomSheetScaffoldState()
-    var showFloatingActionButton by remember { mutableStateOf(false) }
-    var showAboutDialog by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    fun BottomSheetScaffoldState.trigger() {
-        scope.launch {
-            bottomSheetState.apply {
-                if (isCollapsed) expand() else collapse()
-            }
-        }
-    }
-
-    fun BottomSheetScaffoldState.collapse() {
-        scope.launch {
-            bottomSheetState.collapse()
-        }
-    }
+    var showBottomBar by remember { mutableStateOf(false) }
 
     fun broadcast(action: String) {
         CoroutineScope(Dispatchers.Main).launch {
@@ -72,119 +48,49 @@ fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
                     that.copy(selected = !that.selected)
                 } else that
             }
-            scaffoldState.trigger()
+            showBottomBar = false
         }
     }
 
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        floatingActionButton = {
+    Scaffold(
+        bottomBar = {
             AnimatedVisibility(
-                visible = showFloatingActionButton,
-                enter = scaleIn(),
-                exit = scaleOut()
+                visible = showBottomBar,
+                exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight }),
+                enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight })
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        scaffoldState.trigger()
-                    }) {
-                    Icon(Icons.Filled.Settings, null)
+                NavigationBar {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                        label = { Text("Create Icon") },
+                        selected = false,
+                        onClick = { broadcast(Intent.ACTION_PACKAGE_ADDED) }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Filled.Delete, contentDescription = null) },
+                        label = { Text("Remove Icon") },
+                        selected = false,
+                        onClick = { broadcast(Intent.ACTION_PACKAGE_FULLY_REMOVED) }
+                    )
                 }
             }
         },
-        sheetContent = {
-            Box(
-                modifier = Modifier.height(BottomSheetScaffoldDefaults.SheetPeekHeight)
-                    .padding(0.dp)
-                    .fillMaxWidth().clickable {
-                        showAboutDialog = !showAboutDialog
-                    },
-                contentAlignment = Alignment.Center
+        content = { innerPadding ->
+            LazyColumn(
+                contentPadding = innerPadding
             ) {
-                Text(
-                    context.applicationInfo.loadLabel(context.packageManager).toString(),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.h5,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1
-                )
-            }
-            Box(
-                modifier = Modifier.height(BottomSheetScaffoldDefaults.SheetPeekHeight)
-                    .padding(8.dp)
-                    .fillMaxWidth()
-            ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        broadcast(Intent.ACTION_PACKAGE_ADDED)
+                items(items = apps) {
+                    AppListItem(app = it) {
+                        apps = apps.map { that ->
+                            if (it.packageName == that.packageName) {
+                                that.copy(selected = !that.selected)
+                            } else that
+                        }
+                        showBottomBar = apps.countSelected() > 0
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Create Icon",
-                        Modifier.padding(end = 8.dp)
-                    )
-                    Text(text = "Create Icon")
                 }
-            }
-            Box(
-                modifier = Modifier.height(BottomSheetScaffoldDefaults.SheetPeekHeight)
-                    .padding(8.dp)
-                    .fillMaxWidth()
-            ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        broadcast(Intent.ACTION_PACKAGE_FULLY_REMOVED)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete Icon",
-                        Modifier.padding(end = 8.dp)
-                    )
-                    Text(text = "Delete Icon")
-                }
-            }
 
+            }
         }
-    ) {
-        LazyColumn(
-            contentPadding = PaddingValues(
-                bottom = 16.dp + BottomSheetScaffoldDefaults.SheetPeekHeight,
-                top = 16.dp,
-                start = 8.dp,
-                end = 8.dp
-            )
-        ) {
-            items(items = apps) {
-                AppListItem(app = it) {
-                    apps = apps.map { that ->
-                        if (it.packageName == that.packageName) {
-                            that.copy(selected = !that.selected)
-                        } else that
-                    }
-                    showFloatingActionButton = apps.countSelected() > 0
-                    if (!showFloatingActionButton) {
-                        scaffoldState.collapse()
-                    }
-                }
-            }
-
-        }
-    }
-
-    if (showAboutDialog) {
-        AlertDialog(
-            onDismissRequest = { showAboutDialog = false },
-            title = {
-                Text("WSA Helper")
-            },
-            text = {
-                Text("This app can help you manually create and remove app icons in the start menu")
-            },
-            buttons = {},
-        )
-    }
+    )
 }
