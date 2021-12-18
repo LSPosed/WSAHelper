@@ -31,7 +31,6 @@ fun List<App>.selectedPackages() = filter { it.selected }.map { it.packageName }
 fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
     val context = LocalContext.current
     var apps by remember { mutableStateOf(DataProvider.getApplicationList(context.packageManager)) }
-    var showBottomBar by remember { mutableStateOf(false) }
 
     fun broadcast(action: String) {
         CoroutineScope(Dispatchers.Main).launch {
@@ -48,14 +47,13 @@ fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
                     that.copy(selected = !that.selected)
                 } else that
             }
-            showBottomBar = false
         }
     }
 
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
-                visible = showBottomBar,
+                visible = apps.countSelected() > 0,
                 exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight }),
                 enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight })
             ) {
@@ -86,7 +84,6 @@ fun HomePageContent(broadcastReceiver: BroadcastReceiver) {
                             that.copy(selected = !that.selected)
                         } else that
                     }
-                    showBottomBar = apps.countSelected() > 0
                 }
             }
 
