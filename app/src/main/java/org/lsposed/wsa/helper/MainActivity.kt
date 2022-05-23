@@ -16,7 +16,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val installReceiver: BroadcastReceiver? = getWSAInstallReceiver(this)
         setContent {
             val colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (isSystemInDarkTheme())
@@ -28,11 +27,12 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(
                 colorScheme = colorScheme
             ) {
+                val installReceiver: BroadcastReceiver? = getWSAInstallReceiver(this)
                 if (installReceiver == null || (applicationInfo.flags or ApplicationInfo.FLAG_SYSTEM) == 0) {
                     AlertDialog(
                         onDismissRequest = { finish() },
                         title = {
-                            Text("Failed to initialized")
+                            Text("Failed to initialized\ninstallReceiver=$installReceiver")
                         },
                         confirmButton = {}
                     )
