@@ -17,8 +17,10 @@ fun getWSAInstallReceiver(context: Context) = runCatching {
     val ctor = handlerClass.getConstructor(Context::class.java)
     ctor.newInstance(object : ContextWrapper(context) {
         fun onRegister(receiver: BroadcastReceiver?, filter: IntentFilter) {
-            Log.d(TAG, "skip receiver")
-            if (filter.hasAction(Intent.ACTION_PACKAGE_ADDED) && receiver != null) {
+            Log.d(TAG, "skip receiver, filter: ${filter.actionsIterator().next()}")
+            if ((filter.hasAction(Intent.ACTION_PACKAGE_ADDED) ||
+                        filter.hasAction("com.microsoft.windows.app.packageinstall.INTENT_PACKAGE_UNINSTALL_COMMIT")) && receiver != null
+            ) {
                 installReceiver = receiver
                 Log.i(TAG, "got install receiver")
             }
